@@ -1,9 +1,9 @@
 # Roadmap
 
-- [x] Design directions generated (Terminal Aurora chosen)
-- [ ] App name: TTI — The Trading Institute
-- [ ] Design system tokens (dark aurora terminal)
-- [ ] Dashboard: indices ticker, portfolio stats, holdings, stock detail, order ticket, movers
-- [ ] Markets route (portfolio companies listed)
-- [ ] Orders route
-- [ ] Deploy / publish
+- [x] Design direction (Terminal Aurora)
+- [x] App name: TTI — The Trading Institute
+- [x] Design system tokens (dark aurora terminal)
+- [x] Dashboard: indices ticker, portfolio stats, holdings, stock detail, order ticket, watchlist
+- [x] Markets route (portfolio companies listed)
+- [x] Orders route
+- [ ] Publish (user declined the publish prompt — re-run when ready)
