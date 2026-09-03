@@ -29,7 +29,7 @@ function Dashboard() {
   const s = portfolioStats();
   const [side, setSide] = useState<"BUY" | "SELL">("BUY");
   const [qty, setQty] = useState(50);
-  const stock = holdings[1];
+  const stock = holdings[1]!;
 
   return (
     <Shell>
