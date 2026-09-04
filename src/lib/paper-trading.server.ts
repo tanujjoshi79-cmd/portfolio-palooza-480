@@ -14,11 +14,13 @@ type PaperOrder = {
   type: "MARKET" | "LIMIT";
   status: "EXECUTED" | "REJECTED";
   time: string;
+  realizedPnl?: number;
 };
 
 let cash = INITIAL_BALANCE;
 let positions: Position[] = [];
 let paperOrders: PaperOrder[] = [];
+let realizedPnl = 0;
 
 const priceFor = (symbol: string) => {
   const key = symbol.trim().toUpperCase();
@@ -41,12 +43,15 @@ export const getPaperAccount = createServerFn({ method: "GET" }).handler(() => {
     return { ...p, ltp, value: p.qty * ltp, pnl: p.qty * (ltp - p.avg) };
   });
   const holdingsValue = enriched.reduce((sum, p) => sum + p.value, 0);
+  const unrealizedPnl = enriched.reduce((sum, p) => sum + p.pnl, 0);
   return {
     initialBalance: INITIAL_BALANCE,
     cash,
     holdings: enriched,
     equity: cash + holdingsValue,
-    pnl: cash + holdingsValue - INITIAL_BALANCE,
+    pnl: realizedPnl + unrealizedPnl,
+    realizedPnl,
+    unrealizedPnl,
     orders: paperOrders,
   };
 });
@@ -63,6 +68,7 @@ export const placePaperOrder = createServerFn({ method: "POST" })
 
     const value = price * data.qty;
     const existing = positions.find((p) => p.symbol === symbol);
+    let orderRealizedPnl: number | undefined;
 
     if (data.side === "BUY") {
       if (value > cash) throw new Error("Insufficient virtual cash");
@@ -76,6 +82,8 @@ export const placePaperOrder = createServerFn({ method: "POST" })
       }
     } else {
       if (!existing || existing.qty < data.qty) throw new Error("Insufficient holdings");
+      orderRealizedPnl = (price - existing.avg) * data.qty;
+      realizedPnl += orderRealizedPnl;
       cash += value;
       existing.qty -= data.qty;
       if (existing.qty === 0) positions = positions.filter((p) => p.symbol !== symbol);
@@ -90,14 +98,16 @@ export const placePaperOrder = createServerFn({ method: "POST" })
       type: data.orderType,
       status: "EXECUTED",
       time: new Date().toISOString(),
+      ...(orderRealizedPnl !== undefined ? { realizedPnl: orderRealizedPnl } : {}),
     };
     paperOrders = [order, ...paperOrders].slice(0, 100);
-    return { order, cash };
+    return { order, cash, realizedPnl };
   });
 
 export const resetPaperAccount = createServerFn({ method: "POST" }).handler(() => {
   cash = INITIAL_BALANCE;
   positions = [];
   paperOrders = [];
+  realizedPnl = 0;
   return getPaperAccount();
 });
