@@ -16,7 +16,10 @@ function Dashboard() {
   const [side, setSide] = useState<"BUY" | "SELL">("BUY");
   const [qty, setQty] = useState(50);
   const [account, setAccount] = useState<Awaited<ReturnType<typeof getPaperAccount>> | null>(null);
-  const stock = holdings[1]!;
+  const selectedSymbol = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("symbol") : null;
+  const selectedHolding = holdings.find((h) => h.symbol === selectedSymbol);
+  const selectedWatch = watchlist.find((w) => w.symbol === selectedSymbol);
+  const stock = selectedHolding ?? selectedWatch ?? holdings[1]!;
   const s = portfolioStats();
 
   async function refreshAccount() { setAccount(await getPaperAccount()); }
@@ -50,7 +53,7 @@ function Dashboard() {
           </Panel></div>
         </section>
         <aside className="col-span-12 space-y-5 lg:col-span-4">
-          <Panel title="Stock Detail" tag="(b)" meta={`${stock.symbol} · NSE`}><div className="px-4 pt-4"><div className="flex items-end justify-between"><div><div className="font-display text-lg font-bold">{stock.symbol}</div><div className="font-mono text-[10px] text-muted-foreground">{stock.name}</div></div><div className="text-right"><div className="font-mono text-xl">{inr(stock.ltp)}</div><div className="font-mono text-[11px] text-up">+{stock.changePct.toFixed(2)}%</div></div></div><svg viewBox="0 0 300 90" preserveAspectRatio="none" className="mt-3 h-[90px] w-full"><path className="chart-line text-up" d={chartPath} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" /></svg></div></Panel>
+          <Panel title="Stock Detail" tag="(b)" meta={`${stock.symbol} · NSE`}><div className="px-4 pt-4"><div className="flex items-end justify-between"><div><div className="font-display text-lg font-bold">{stock.symbol}</div><div className="font-mono text-[10px] text-muted-foreground">{stock.name}</div></div><div className="text-right"><div className="font-mono text-xl">{inr(stock.ltp)}</div><div className={`font-mono text-[11px] ${stock.changePct >= 0 ? "text-up" : "text-down"}`}>{stock.changePct >= 0 ? "+" : ""}{stock.changePct.toFixed(2)}%</div></div></div><svg viewBox="0 0 300 90" preserveAspectRatio="none" className="mt-3 h-[90px] w-full"><path className="chart-line text-up" d={chartPath} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" /></svg></div></Panel>
           <div className="overflow-hidden rounded-xl border border-line bg-white/[0.03] backdrop-blur-md">
             <div className="flex items-center gap-1 p-1.5">{(["BUY", "SELL"] as const).map((s2) => <button key={s2} onClick={() => setSide(s2)} className={`flex-1 rounded-lg py-2 font-mono text-[11px] uppercase ${side === s2 ? s2 === "BUY" ? "bg-up/15 text-up" : "bg-down/15 text-down" : "text-muted-foreground"}`}>{s2}</button>)}</div>
             <div className="space-y-3 p-4"><Row label="Mode" value="PAPER TRADING" /><Row label="Order type" value="Market" /><div className="flex items-center justify-between"><span className="font-mono text-[10px] uppercase text-muted-foreground">Quantity</span><div className="flex items-center gap-2"><button onClick={() => setQty((q) => Math.max(1, q - 5))} className="grid size-6 place-items-center rounded-md border border-line">-</button><span className="w-8 text-center font-mono text-[13px]">{qty}</span><button onClick={() => setQty((q) => q + 5)} className="grid size-6 place-items-center rounded-md border border-line">+</button></div></div><Row label="Est. price" value={inr(stock.ltp)} /><div className="flex items-center justify-between border-t border-line pt-3"><span className="font-mono text-[10px] uppercase text-muted-foreground">Est. total</span><span className="font-mono text-[15px]">{inr(stock.ltp * qty, 0)}</span></div><PaperOrderButton symbol={stock.symbol} side={side} qty={qty} price={stock.ltp} /></div>
