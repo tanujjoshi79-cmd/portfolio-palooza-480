@@ -19,7 +19,7 @@ function Dashboard() {
   const selectedSymbol = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("symbol") : null;
   const selectedHolding = holdings.find((h) => h.symbol === selectedSymbol);
   const selectedWatch = watchlist.find((w) => w.symbol === selectedSymbol);
-  const stock = selectedHolding ?? selectedWatch ?? holdings[1]!;
+  const stock = selectedHolding ?? (selectedWatch ? { symbol: selectedWatch.symbol, name: selectedWatch.symbol, ltp: selectedWatch.ltp, changePct: selectedWatch.changePct } : holdings[1]!);
   const s = portfolioStats();
 
   async function refreshAccount() { setAccount(await getPaperAccount()); }
