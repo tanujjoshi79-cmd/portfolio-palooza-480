@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { getTradingMode } from "@/lib/trading-mode.server";
 import { placePaperOrder } from "@/lib/paper-trading.server";
 
 type Props = {
@@ -9,7 +10,8 @@ type Props = {
   price: number;
 };
 
-export function LiveOrderButton({ symbol, side, qty, price }: Props) {
+export function LiveOrderButton({ symbol, side, qty }: Props) {
+  const getMode = useServerFn(getTradingMode);
   const placeOrder = useServerFn(placePaperOrder);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -18,12 +20,22 @@ export function LiveOrderButton({ symbol, side, qty, price }: Props) {
     setBusy(true);
     setMessage(null);
     try {
+      const mode = await getMode();
+
+      // Safety gate: the project currently has a paper-trading execution backend,
+      // not a broker order API. Never silently turn a paper action into a real order.
+      if (mode.liveEnabled) {
+        setMessage("LIVE mode is enabled, but broker execution is not connected yet. No real order was sent.");
+        return;
+      }
+
       const result = await placeOrder({
         data: { symbol, side, qty, orderType: "MARKET" },
       });
-      setMessage(`Paper order executed · ${result.order.id} · ₹${result.order.price.toLocaleString("en-IN")}`);
+      setMessage(`PAPER order executed · ${result.order.id} · ₹${result.order.price.toLocaleString("en-IN")}`);
+      window.dispatchEvent(new CustomEvent("paper-trading-updated"));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Paper order failed");
+      setMessage(error instanceof Error ? error.message : "Order failed");
     } finally {
       setBusy(false);
     }
@@ -37,7 +49,7 @@ export function LiveOrderButton({ symbol, side, qty, price }: Props) {
         onClick={handleClick}
         className="w-full rounded-lg bg-accent py-2.5 font-display text-sm font-bold text-accent-foreground transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {busy ? "Processing Paper Order…" : `Place Paper ${side === "BUY" ? "Buy" : "Sell"} Order`}
+        {busy ? "Checking Trading Mode…" : `Place ${side === "BUY" ? "Buy" : "Sell"} Order`}
       </button>
       {message && <div className="font-mono text-[10px] text-muted-foreground">{message}</div>}
     </div>
