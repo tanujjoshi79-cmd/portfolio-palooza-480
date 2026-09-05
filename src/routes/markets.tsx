@@ -6,10 +6,10 @@ import { holdings, inr, watchlist } from "@/lib/market-data";
 export const Route = createFileRoute("/markets")({
   head: () => ({
     meta: [
-      { title: "Market Charts — TTI" },
-      { name: "description", content: "Interactive market chart with candlesticks and basic candlestick-pattern detection for the TTI paper-trading terminal." },
-      { property: "og:title", content: "Market Charts — The Trading Institute" },
-      { property: "og:description", content: "View price action, candlesticks, timeframes and detected candle patterns." },
+      { title: "Markets — TTI" },
+      { name: "description", content: "Market overview, indices, movers, candlesticks and pattern detection for the TTI paper-trading terminal." },
+      { property: "og:title", content: "Markets — The Trading Institute" },
+      { property: "og:description", content: "Market overview, indices, price action and candlestick patterns." },
     ],
   }),
   component: Markets,
@@ -17,7 +17,35 @@ export const Route = createFileRoute("/markets")({
 
 type Candle = { open: number; high: number; low: number; close: number };
 
+type IndexQuote = { name: string; value: number; change: number; changePct: number };
+
 const timeframes = ["1D", "1W", "1M", "3M", "1Y"] as const;
+
+const marketIndices: IndexQuote[] = [
+  { name: "NIFTY 50", value: 24804.15, change: 104.35, changePct: 0.42 },
+  { name: "SENSEX", value: 81240.3, change: -146.8, changePct: -0.18 },
+  { name: "BANK NIFTY", value: 52410.9, change: 140.55, changePct: 0.27 },
+  { name: "NIFTY IT", value: 41022.6, change: 425.35, changePct: 1.05 },
+  { name: "FINNIFTY", value: 23110.4, change: 71.4, changePct: 0.31 },
+  { name: "INDIA VIX", value: 13.42, change: -0.29, changePct: -2.1 },
+];
+
+const sectors = [
+  ["IT", 1.42],
+  ["Banking", 0.78],
+  ["Pharma", 0.56],
+  ["Auto", 0.31],
+  ["FMCG", -0.12],
+  ["Metal", -0.48],
+] as const;
+
+const marketStats = {
+  advances: 1324,
+  declines: 874,
+  unchanged: 96,
+  week52High: 87,
+  week52Low: 41,
+};
 
 function makeCandles(base: number, changePct: number, seed: number, points = 32): Candle[] {
   let price = base * (1 - changePct / 100 * 0.45);
@@ -77,7 +105,7 @@ function CandleChart({ candles }: { candles: Candle[] }) {
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-black/20">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-[330px] w-full" role="img" aria-label="Candlestick price chart">
-        {ticks.map((tick, i) => (
+        {ticks.map((tick) => (
           <g key={tick}>
             <line x1={pad.left} x2={width - pad.right} y1={y(tick)} y2={y(tick)} stroke="currentColor" className="text-white/[0.07]" />
             <text x={pad.left - 8} y={y(tick) + 4} textAnchor="end" className="fill-muted-foreground font-mono text-[11px]">{inr(tick, 0)}</text>
@@ -97,6 +125,93 @@ function CandleChart({ candles }: { candles: Candle[] }) {
         })}
         <line x1={pad.left} x2={width - pad.right} y1={height - pad.bottom} y2={height - pad.bottom} stroke="currentColor" className="text-white/10" />
       </svg>
+    </div>
+  );
+}
+
+function MarketOverview() {
+  const breadthTotal = marketStats.advances + marketStats.declines + marketStats.unchanged;
+  const advancePct = (marketStats.advances / breadthTotal) * 100;
+  const topGainers = [...holdings, ...watchlist.map((w) => ({ ...w, name: w.symbol }))].sort((a, b) => b.changePct - a.changePct).slice(0, 3);
+  const topLosers = [...holdings, ...watchlist.map((w) => ({ ...w, name: w.symbol }))].sort((a, b) => a.changePct - b.changePct).slice(0, 3);
+
+  return (
+    <div className="mb-5">
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-lg font-bold tracking-tight">Market Overview</h2>
+          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">India · Equities · NSE / BSE</p>
+        </div>
+        <span className="rounded-full border border-up/30 bg-up/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-up">Market Open</span>
+      </div>
+
+      <div className="grid grid-cols-12 gap-3">
+        <div className="col-span-12 xl:col-span-8">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+            {marketIndices.map((index) => (
+              <div key={index.name} className="rounded-xl border border-line bg-black/20 p-3 transition-colors hover:bg-white/[0.025]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{index.name}</span>
+                  <span className={`h-1.5 w-1.5 rounded-full ${index.changePct >= 0 ? "bg-up" : "bg-down"}`} />
+                </div>
+                <div className="mt-2 font-mono text-lg font-semibold">{index.name === "INDIA VIX" ? index.value.toFixed(2) : index.value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className={`mt-1 font-mono text-[11px] ${index.changePct >= 0 ? "text-up" : "text-down"}`}>
+                  {index.changePct >= 0 ? "+" : ""}{index.change.toFixed(2)} ({index.changePct >= 0 ? "+" : ""}{index.changePct.toFixed(2)}%)
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="col-span-12 xl:col-span-4">
+          <Panel title="Market Breadth" tag="(a)" meta="ALL STOCKS">
+            <div className="px-4 py-3">
+              <div className="flex items-end justify-between">
+                <div><div className="font-mono text-2xl">{marketStats.advances + marketStats.declines + marketStats.unchanged}</div><div className="font-mono text-[10px] text-muted-foreground">TOTAL TRACKED</div></div>
+                <div className="text-right"><div className="font-mono text-sm text-up">{advancePct.toFixed(1)}%</div><div className="font-mono text-[10px] text-muted-foreground">ADVANCING</div></div>
+              </div>
+              <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-white/5">
+                <div className="bg-up" style={{ width: `${(marketStats.advances / breadthTotal) * 100}%` }} />
+                <div className="bg-down" style={{ width: `${(marketStats.declines / breadthTotal) * 100}%` }} />
+                <div className="bg-white/20" style={{ width: `${(marketStats.unchanged / breadthTotal) * 100}%` }} />
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2 font-mono text-[10px]">
+                <span className="text-up">ADV {marketStats.advances}</span>
+                <span className="text-down">DEC {marketStats.declines}</span>
+                <span className="text-muted-foreground">UNCH {marketStats.unchanged}</span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2 border-t border-line pt-3">
+                <span className="font-mono text-[10px] text-muted-foreground">52W HIGH <b className="text-foreground">{marketStats.week52High}</b></span>
+                <span className="font-mono text-[10px] text-muted-foreground">52W LOW <b className="text-foreground">{marketStats.week52Low}</b></span>
+              </div>
+            </div>
+          </Panel>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4">
+          <Panel title="Top Gainers" tag="(b)" meta="TODAY">
+            <div className="divide-y divide-line">
+              {topGainers.map((stock) => <div key={stock.symbol} className="flex items-center justify-between px-4 py-2.5"><div><div className="text-[12px] font-medium">{stock.symbol}</div><div className="font-mono text-[9px] text-muted-foreground">{inr(stock.ltp)}</div></div><span className="font-mono text-[11px] text-up">+{stock.changePct.toFixed(2)}%</span></div>)}
+            </div>
+          </Panel>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4">
+          <Panel title="Top Losers" tag="(c)" meta="TODAY">
+            <div className="divide-y divide-line">
+              {topLosers.map((stock) => <div key={stock.symbol} className="flex items-center justify-between px-4 py-2.5"><div><div className="text-[12px] font-medium">{stock.symbol}</div><div className="font-mono text-[9px] text-muted-foreground">{inr(stock.ltp)}</div></div><span className="font-mono text-[11px] text-down">{stock.changePct.toFixed(2)}%</span></div>)}
+            </div>
+          </Panel>
+        </div>
+
+        <div className="col-span-12 lg:col-span-4">
+          <Panel title="Sector Performance" tag="(d)" meta="TODAY">
+            <div className="divide-y divide-line">
+              {sectors.map(([sector, change]) => <div key={sector} className="flex items-center justify-between px-4 py-2.5"><span className="text-[12px]">{sector}</span><div className="flex items-center gap-3"><div className="h-1 w-20 overflow-hidden rounded-full bg-white/5"><div className={change >= 0 ? "h-full bg-up" : "h-full bg-down"} style={{ width: `${Math.min(100, Math.abs(change) * 35)}%` }} /></div><span className={`w-14 text-right font-mono text-[11px] ${change >= 0 ? "text-up" : "text-down"}`}>{change >= 0 ? "+" : ""}{change.toFixed(2)}%</span></div></div>)}
+            </div>
+          </Panel>
+        </div>
+      </div>
     </div>
   );
 }
@@ -134,7 +249,9 @@ function Markets() {
         <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">{holdings.length + watchlist.length} instruments</span>
       </div>
 
-      <Panel title="Price Chart" tag="(a)" meta={`${stock.symbol} · NSE`}>
+      <MarketOverview />
+
+      <Panel title="Price Chart" tag="(e)" meta={`${stock.symbol} · NSE`}>
         <div className="px-4 pt-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -161,7 +278,7 @@ function Markets() {
 
       <div className="mt-5 grid grid-cols-12 gap-5">
         <div className="col-span-12 lg:col-span-7">
-          <Panel title="Candlestick Patterns" tag="(b)" meta="AUTO DETECTION">
+          <Panel title="Candlestick Patterns" tag="(f)" meta="AUTO DETECTION">
             <div className="divide-y divide-line">
               {patterns.map((p) => (
                 <div key={p.name} className="flex items-center justify-between gap-4 px-4 py-3">
@@ -174,7 +291,7 @@ function Markets() {
           </Panel>
         </div>
         <div className="col-span-12 lg:col-span-5">
-          <Panel title="Selected Candle" tag="(c)" meta={timeframe}>
+          <Panel title="Selected Candle" tag="(g)" meta={timeframe}>
             <div className="space-y-3 px-4 py-4">
               <Row label="Open" value={inr(last.open)} />
               <Row label="High" value={inr(last.high)} />
@@ -188,7 +305,7 @@ function Markets() {
       </div>
 
       <div className="mt-5">
-        <Panel title="Listed Companies" tag="(d)" meta="LIVE · NSE / BSE">
+        <Panel title="Listed Companies" tag="(h)" meta="LIVE · NSE / BSE">
           <div className="grid grid-cols-12 border-b border-line px-4 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
             <span className="col-span-4">Company</span><span className="col-span-1 text-right">Qty</span><span className="col-span-2 text-right">Avg cost</span><span className="col-span-2 text-right">LTP</span><span className="col-span-2 text-right">P&L</span><span className="col-span-1 text-right">Chg</span>
           </div>
@@ -211,12 +328,12 @@ function Markets() {
       </div>
 
       <div className="mt-5 grid grid-cols-12 gap-5">
-        <div className="col-span-12 lg:col-span-6"><Panel title="Market Movers" tag="(e)" meta="TOP GAINERS"><div className="divide-y divide-line">
+        <div className="col-span-12 lg:col-span-6"><Panel title="Market Movers" tag="(i)" meta="TOP GAINERS"><div className="divide-y divide-line">
           {[...holdings, ...watchlist.map((w) => ({ ...w, name: w.symbol }))].sort((a, b) => b.changePct - a.changePct).slice(0, 5).map((m) => (
             <button key={m.symbol} type="button" onClick={() => selectStock(m.symbol)} className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-white/[0.04]"><span className="text-[13px] font-medium">{m.symbol}</span><span className={`font-mono text-[12px] ${m.changePct >= 0 ? "text-up" : "text-down"}`}>{m.changePct >= 0 ? "+" : ""}{m.changePct.toFixed(2)}%</span></button>
           ))}
         </div></Panel></div>
-        <div className="col-span-12 lg:col-span-6"><Panel title="Watchlist" tag="(f)" meta="MY STOCKS"><div className="divide-y divide-line">
+        <div className="col-span-12 lg:col-span-6"><Panel title="Watchlist" tag="(j)" meta="MY STOCKS"><div className="divide-y divide-line">
           {watchlist.map((w) => <button key={w.symbol} type="button" onClick={() => selectStock(w.symbol)} className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-white/[0.04]"><span className="text-[13px] font-medium">{w.symbol}</span><span className="flex items-center gap-3"><span className="font-mono text-[12px] text-muted-foreground">{inr(w.ltp)}</span><span className={`font-mono text-[12px] ${w.changePct >= 0 ? "text-up" : "text-down"}`}>{w.changePct >= 0 ? "+" : ""}{w.changePct.toFixed(2)}%</span></span></button>)}
         </div></Panel></div>
       </div>
