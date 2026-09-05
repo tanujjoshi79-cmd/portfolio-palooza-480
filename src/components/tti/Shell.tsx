@@ -22,7 +22,11 @@ export function Shell({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between px-5 py-3">
             <div className="flex items-center gap-8">
               <Link to="/" className="flex items-center gap-2">
-                <span className="size-2.5 rounded-full bg-accent shadow-[0_0_10px_2px] shadow-accent/50" />
+                <img
+                  src="/favicon.svg"
+                  alt="The Trading Institute logo"
+                  className="size-5 rounded-md object-cover"
+                />
                 <span className="font-display text-[15px] font-bold tracking-tight">TTI</span>
                 <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
                   The Trading Institute
