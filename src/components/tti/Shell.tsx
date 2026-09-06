@@ -5,7 +5,7 @@ import { indices, holdings, watchlist } from "@/lib/market-data";
 const nav = [
   { to: "/", label: "Dashboard" }, { to: "/markets", label: "Markets" }, { to: "/fo", label: "F&O" },
   { to: "/mutual-funds", label: "Mutual Funds" }, { to: "/commodities", label: "Commodities" }, { to: "/fd", label: "FD" },
-  { to: "/courses", label: "Courses" }, { to: "/orders", label: "Orders" },
+  { to: "/courses", label: "Courses" }, { to: "/operational-cost", label: "Operational Cost" }, { to: "/orders", label: "Orders" },
 ] as const;
 
 export function Shell({ children }: { children: ReactNode }) {
