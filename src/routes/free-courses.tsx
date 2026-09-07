@@ -30,12 +30,12 @@ function FreeCourses() {
       <div className="grid grid-cols-12 gap-5">
         <div className="col-span-12 lg:col-span-8">
           <Panel title={lecture.title} tag="FREE VIDEO LECTURE" meta={`${selected} / ${lectures.length}`}>
-            <div className="aspect-video bg-black">
-              <iframe className="h-full w-full" src={`https://www.youtube.com/embed/${videoId}?rel=0`} title={lecture.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+            <div className="relative aspect-video bg-black">
+              <iframe className="h-full w-full" src={`https://www.youtube.com/embed/${videoId}?rel=0`} title={lecture.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowFullScreen />
             </div>
-            <div className="border-t border-line px-4 py-3">
-              <div className="font-display text-sm font-semibold">Stock Market Basics — Free Lectures</div>
-              <div className="mt-1 font-mono text-[10px] text-muted-foreground">Lecture {lecture.id} · Free access · YouTube</div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-3">
+              <div><div className="font-display text-sm font-semibold">Stock Market Basics — Free Lectures</div><div className="mt-1 font-mono text-[10px] text-muted-foreground">Lecture {lecture.id} · Free access · YouTube</div></div>
+              <button type="button" onClick={() => { const iframe = document.querySelector("iframe[title=\"" + lecture.title + "\"]") as HTMLIFrameElement | null; if (iframe?.requestFullscreen) iframe.requestFullscreen(); }} className="rounded-lg border border-line bg-white/[0.04] px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-accent hover:bg-white/[0.08]">⛶ Full Screen</button>
             </div>
           </Panel>
         </div>
