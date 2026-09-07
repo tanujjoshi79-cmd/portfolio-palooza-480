@@ -23,6 +23,7 @@ import { Route as MarketNewsRouteImport } from './routes/market-news'
 import { Route as MutualFundsRouteImport } from './routes/mutual-funds'
 import { Route as OperationalCostRouteImport } from './routes/operational-cost'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as PortfolioNewsRouteImport } from './routes/portfolio-news'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
 const MarketsRoute = MarketsRouteImport.update({ id: '/markets', path: '/markets', getParentRoute: () => rootRouteImport } as any)
@@ -39,6 +40,7 @@ const MarketNewsRoute = MarketNewsRouteImport.update({ id: '/market-news', path:
 const MutualFundsRoute = MutualFundsRouteImport.update({ id: '/mutual-funds', path: '/mutual-funds', getParentRoute: () => rootRouteImport } as any)
 const OperationalCostRoute = OperationalCostRouteImport.update({ id: '/operational-cost', path: '/operational-cost', getParentRoute: () => rootRouteImport } as any)
 const PortfolioRoute = PortfolioRouteImport.update({ id: '/portfolio', path: '/portfolio', getParentRoute: () => rootRouteImport } as any)
+const PortfolioNewsRoute = PortfolioNewsRouteImport.update({ id: '/portfolio-news', path: '/portfolio-news', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -56,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/mutual-funds': typeof MutualFundsRoute
   '/operational-cost': typeof OperationalCostRoute
   '/portfolio': typeof PortfolioRoute
+  '/portfolio-news': typeof PortfolioNewsRoute
 }
 export interface FileRoutesByTo extends FileRoutesByFullPath {}
 export interface FileRoutesById {
@@ -75,12 +78,12 @@ export interface FileRoutesById {
   '/mutual-funds': typeof MutualFundsRoute
   '/operational-cost': typeof OperationalCostRoute
   '/portfolio': typeof PortfolioRoute
+  '/portfolio-news': typeof PortfolioNewsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: keyof FileRoutesByFullPath
   fileRoutesByTo: FileRoutesByTo
-  to: keyof FileRoutesByTo
   id: '__root__' | keyof FileRoutesById
   fileRoutesById: FileRoutesById
 }
@@ -100,6 +103,7 @@ export interface RootRouteChildren {
   MutualFundsRoute: typeof MutualFundsRoute
   OperationalCostRoute: typeof OperationalCostRoute
   PortfolioRoute: typeof PortfolioRoute
+  PortfolioNewsRoute: typeof PortfolioNewsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -119,6 +123,7 @@ declare module '@tanstack/react-router' {
     '/mutual-funds': { id: '/mutual-funds'; path: '/mutual-funds'; fullPath: '/mutual-funds'; preLoaderRoute: typeof MutualFundsRouteImport; parentRoute: typeof rootRouteImport }
     '/operational-cost': { id: '/operational-cost'; path: '/operational-cost'; fullPath: '/operational-cost'; preLoaderRoute: typeof OperationalCostRouteImport; parentRoute: typeof rootRouteImport }
     '/portfolio': { id: '/portfolio'; path: '/portfolio'; fullPath: '/portfolio'; preLoaderRoute: typeof PortfolioRouteImport; parentRoute: typeof rootRouteImport }
+    '/portfolio-news': { id: '/portfolio-news'; path: '/portfolio-news'; fullPath: '/portfolio-news'; preLoaderRoute: typeof PortfolioNewsRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
@@ -138,6 +143,7 @@ const rootRouteChildren: RootRouteChildren = {
   MutualFundsRoute,
   OperationalCostRoute,
   PortfolioRoute,
+  PortfolioNewsRoute,
 }
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
 
