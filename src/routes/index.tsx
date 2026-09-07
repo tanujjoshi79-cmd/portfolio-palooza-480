@@ -35,6 +35,12 @@ function Dashboard() {
   const equity = account?.equity ?? cash;
   const invested = account?.holdings.reduce((sum, h) => sum + h.avg * h.qty, 0) ?? 0;
 
+  const portfolioNews = [
+    { source: "Reuters", date: "7 Sep 2026", title: "RBI moves to absorb surplus banking-system liquidity", text: "Liquidity conditions remain an important market focus for Indian equities, bonds and the rupee." },
+    { source: "ET Markets", date: "7 Sep 2026", title: "Stocks in news: Tata Motors, RVNL, Eicher Motors, Mazagon Dock and Lupin", text: "These stocks are among the names drawing market attention in the latest trading session." },
+    { source: "Moneycontrol", date: "4 Sep 2026", title: "FIIs sell ₹3,111.94 crore while DIIs buy ₹8,930.12 crore", text: "Institutional flows remain an important factor to watch alongside index and sector moves." },
+  ];
+
   return (
     <Shell>
       <div className="grid grid-cols-12 gap-5">
@@ -61,6 +67,28 @@ function Dashboard() {
           <Panel title="Watchlist" tag="(c)" meta="MY STOCKS"><div className="divide-y divide-line">{watchlist.map((w) => <div key={w.symbol} className="flex items-center justify-between px-4 py-2.5"><span className="text-[13px] font-medium">{w.symbol}</span><span className="font-mono text-[12px] text-muted-foreground">{inr(w.ltp)} <span className={w.changePct >= 0 ? "text-up" : "text-down"}>{w.changePct >= 0 ? "+" : ""}{w.changePct.toFixed(2)}%</span></span></div>)}</div></Panel>
         </aside>
       </div>
+
+      <section className="mt-6">
+        <Panel title="Portfolio News" tag="(d)" meta="MARKET · PORTFOLIO">
+          <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-display text-lg font-bold tracking-tight">Portfolio News</h2>
+              <p className="mt-1 max-w-2xl text-[12px] text-muted-foreground">Latest market updates that can help customers understand movements affecting their portfolio.</p>
+            </div>
+            <Link to="/portfolio-news" className="shrink-0 rounded-lg border border-line px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-accent hover:bg-white/[0.05]">Open Portfolio News →</Link>
+          </div>
+          <div className="grid gap-3 border-t border-line p-4 md:grid-cols-3">
+            {portfolioNews.map((item) => (
+              <Link key={item.title} to="/portfolio-news" className="group rounded-lg border border-line bg-white/[0.02] p-4 transition hover:bg-white/[0.05]">
+                <div className="flex items-center justify-between gap-2 font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground"><span>{item.source}</span><span>{item.date}</span></div>
+                <h3 className="mt-2 text-[13px] font-semibold leading-5 group-hover:text-accent">{item.title}</h3>
+                <p className="mt-2 text-[11px] leading-5 text-muted-foreground">{item.text}</p>
+                <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-accent">Read portfolio news →</div>
+              </Link>
+            ))}
+          </div>
+        </Panel>
+      </section>
     </Shell>
   );
 }
