@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { indices, holdings, watchlist } from "@/lib/market-data";
 
 const nav = [
-  { to: "/", label: "Dashboard" }, { to: "/markets", label: "Markets" }, { to: "/market-news", label: "Market News" }, { to: "/portfolio", label: "Portfolio" }, { to: "/fo", label: "F&O" },
+  { to: "/", label: "Dashboard" }, { to: "/markets", label: "Markets" }, { to: "/market-news", label: "Market News" }, { to: "/portfolio", label: "Portfolio" }, { to: "/portfolio-news", label: "Portfolio News" }, { to: "/fo", label: "F&O" },
   { to: "/mutual-funds", label: "Mutual Funds" }, { to: "/commodities", label: "Commodities" }, { to: "/fd", label: "FD" },
   { to: "/free-courses", label: "Free Courses" }, { to: "/courses", label: "Paid Courses" }, { to: "/course-pricing", label: "Course ₹40,000" },
   { to: "/account", label: "Account" }, { to: "/operational-cost", label: "Operational Cost" }, { to: "/orders", label: "Orders" },
