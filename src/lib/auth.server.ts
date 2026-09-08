@@ -5,6 +5,10 @@ export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+export async function findUserByEmail(email: string) {
+  return db.user.findUnique({ where: { email: normalizeEmail(email) } });
+}
+
 export async function createUser(fullName: string, email: string, password: string) {
   const passwordHash = await bcrypt.hash(password, 12);
   return db.user.create({
@@ -17,7 +21,7 @@ export async function createUser(fullName: string, email: string, password: stri
 }
 
 export async function authenticateUser(email: string, password: string) {
-  const user = await db.user.findUnique({ where: { email: normalizeEmail(email) } });
+  const user = await findUserByEmail(email);
   if (!user) return null;
 
   const valid = await bcrypt.compare(password, user.passwordHash);
