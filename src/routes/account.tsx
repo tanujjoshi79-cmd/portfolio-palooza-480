@@ -1,66 +1,73 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Shell, Panel } from "@/components/tti/Shell";
 import { getCourseUser, setCourseUser } from "@/lib/course-access";
+import { getCurrentUserFn, loginFn, logoutFn, signupFn } from "@/lib/auth.functions";
+
+type AccountUser = NonNullable<Awaited<ReturnType<typeof getCurrentUserFn>>>;
 
 export const Route = createFileRoute("/account")({ component: Account });
 
 function Account() {
-  const existing = getCourseUser();
-  const [user, setUser] = useState(existing);
+  const [user, setUser] = useState<AccountUser | null>(getCourseUser() as AccountUser | null);
+  const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const submit = () => {
+  useEffect(() => {
+    getCurrentUserFn()
+      .then((currentUser) => {
+        setUser(currentUser);
+        if (currentUser) setCourseUser(currentUser);
+      })
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const submit = async () => {
     setMessage("");
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
+
     if (!cleanEmail || !password || (mode === "signup" && !cleanName)) {
       setMessage("Please fill all required fields.");
       return;
     }
 
-    const stored = localStorage.getItem("tti-account");
-    const account = stored ? JSON.parse(stored) : null;
+    try {
+      const result = mode === "signup"
+        ? await signupFn({ data: { fullName: cleanName, email: cleanEmail, password } })
+        : await loginFn({ data: { email: cleanEmail, password } });
 
-    if (mode === "signup") {
-      if (account?.email === cleanEmail) {
-        setMessage("Account already exists. Please login.");
-        setMode("login");
+      if ("error" in result && result.error) {
+        setMessage(result.error);
+        if (mode === "signup" && result.error.includes("already exists")) setMode("login");
         return;
       }
-      const newAccount = {
-        id: crypto.randomUUID(),
-        name: cleanName,
-        email: cleanEmail,
-        password,
-      };
-      localStorage.setItem("tti-account", JSON.stringify(newAccount));
-      const courseUser = { id: newAccount.id, name: newAccount.name, email: newAccount.email };
-      setCourseUser(courseUser);
-      setUser(courseUser);
-      setMessage("Account created successfully.");
-      return;
-    }
 
-    if (!account || account.email !== cleanEmail || account.password !== password) {
-      setMessage("Invalid email or password.");
-      return;
+      if (result.user) {
+        setUser(result.user);
+        setCourseUser(result.user);
+        setPassword("");
+        setMessage(mode === "signup" ? "Account created successfully." : "Login successful.");
+      }
+    } catch {
+      setMessage("Unable to connect to the account server. Please try again.");
     }
-
-    const courseUser = { id: account.id, name: account.name, email: account.email };
-    setCourseUser(courseUser);
-    setUser(courseUser);
-    setMessage("Login successful.");
   };
 
-  const logout = () => {
-    localStorage.removeItem("tti-user");
-    setUser(null);
-    setMessage("Logged out.");
+  const logout = async () => {
+    try {
+      await logoutFn();
+      localStorage.removeItem("tti-user");
+      setUser(null);
+      setMessage("Logged out.");
+    } catch {
+      setMessage("Logout failed. Please try again.");
+    }
   };
 
   return (
@@ -68,7 +75,9 @@ function Account() {
       <div className="mx-auto max-w-xl py-4">
         <Panel title="My Account" tag="TTI ACCOUNT">
           <div className="p-5 space-y-5">
-            {user ? (
+            {loading ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">Checking account...</div>
+            ) : user ? (
               <>
                 <div className="rounded-lg border border-line bg-white/[0.03] p-4">
                   <div className="font-display text-lg font-semibold">{user.name}</div>
@@ -95,7 +104,7 @@ function Account() {
 
                 {mode === "signup" && <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" className="w-full rounded-lg border border-line bg-white/[0.03] px-3 py-3 text-sm outline-none" />}
                 <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" type="email" className="w-full rounded-lg border border-line bg-white/[0.03] px-3 py-3 text-sm outline-none" />
-                <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" type="password" className="w-full rounded-lg border border-line bg-white/[0.03] px-3 py-3 text-sm outline-none" />
+                <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (minimum 8 characters)" type="password" className="w-full rounded-lg border border-line bg-white/[0.03] px-3 py-3 text-sm outline-none" />
                 <button type="button" onClick={submit} className="w-full rounded-lg border border-up/40 bg-up/10 px-5 py-3 font-mono text-[10px] uppercase tracking-wider text-up">
                   {mode === "login" ? "Sign In" : "Create Account"}
                 </button>
