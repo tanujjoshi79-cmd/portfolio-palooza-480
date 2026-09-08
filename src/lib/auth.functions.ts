@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { authenticateUser, createUser, getUserById, normalizeEmail, publicUser } from "@/lib/auth.server";
+import {
+  authenticateUser,
+  createUser,
+  findUserByEmail,
+  getUserById,
+  normalizeEmail,
+  publicUser,
+} from "@/lib/auth.server";
 import { useTtiSession } from "@/lib/session";
 
 const credentialsSchema = z.object({
@@ -30,9 +37,7 @@ export const signupFn = createServerFn({ method: "POST" })
   .validator(signupSchema)
   .handler(async ({ data }) => {
     const email = normalizeEmail(data.email);
-    const existing = await import("@/lib/db").then(({ db }) =>
-      db.user.findUnique({ where: { email } }),
-    );
+    const existing = await findUserByEmail(email);
 
     if (existing) return { error: "Account already exists. Please login." };
 
