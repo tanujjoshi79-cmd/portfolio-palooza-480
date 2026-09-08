@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shell, Panel } from "@/components/tti/Shell";
-import { getCourseUser, setCourseUser } from "@/lib/course-access";
+import { setCourseUser } from "@/lib/course-access";
 import { getCurrentUserFn, loginFn, logoutFn, signupFn } from "@/lib/auth.functions";
 
 type AccountUser = NonNullable<Awaited<ReturnType<typeof getCurrentUserFn>>>;
@@ -9,7 +9,7 @@ type AccountUser = NonNullable<Awaited<ReturnType<typeof getCurrentUserFn>>>;
 export const Route = createFileRoute("/account")({ component: Account });
 
 function Account() {
-  const [user, setUser] = useState<AccountUser | null>(getCourseUser() as AccountUser | null);
+  const [user, setUser] = useState<AccountUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
