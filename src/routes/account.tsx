@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shell, Panel } from "@/components/tti/Shell";
 import { setCourseUser } from "@/lib/course-access";
