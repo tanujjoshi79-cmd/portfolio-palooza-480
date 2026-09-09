@@ -70,6 +70,10 @@ function Account() {
     }
   };
 
+  const googleLogin = () => {
+    setMessage("Google sign-in will be available after Google OAuth is connected.");
+  };
+
   return (
     <Shell>
       <div className="mx-auto max-w-xl py-4">
@@ -100,6 +104,17 @@ function Account() {
                 <div className="flex rounded-lg border border-line p-1">
                   <button type="button" onClick={() => { setMode("login"); setMessage(""); }} className={`flex-1 rounded-md px-4 py-2 font-mono text-[10px] uppercase tracking-wider ${mode === "login" ? "bg-white/10 text-white" : "text-muted-foreground"}`}>Sign In</button>
                   <button type="button" onClick={() => { setMode("signup"); setMessage(""); }} className={`flex-1 rounded-md px-4 py-2 font-mono text-[10px] uppercase tracking-wider ${mode === "signup" ? "bg-white/10 text-white" : "text-muted-foreground"}`}>Sign Up</button>
+                </div>
+
+                <button type="button" onClick={googleLogin} className="flex w-full items-center justify-center gap-3 rounded-lg border border-line bg-white px-5 py-3 font-mono text-[10px] uppercase tracking-wider text-gray-900 hover:bg-gray-100">
+                  <span className="text-base font-bold">G</span>
+                  Continue with Google
+                </button>
+
+                <div className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                  <div className="h-px flex-1 bg-line" />
+                  <span>or continue with email</span>
+                  <div className="h-px flex-1 bg-line" />
                 </div>
 
                 {mode === "signup" && <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" className="w-full rounded-lg border border-line bg-white/[0.03] px-3 py-3 text-sm outline-none" />}
