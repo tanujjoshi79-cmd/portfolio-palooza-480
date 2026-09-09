@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shell, Panel } from "@/components/tti/Shell";
 import { setCourseUser } from "@/lib/course-access";
@@ -25,6 +25,14 @@ function Account() {
       })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const googleStatus = params.get("google");
+    if (googleStatus === "success") setMessage("Google login successful.");
+    if (googleStatus === "cancelled") setMessage("Google sign-in was cancelled.");
+    if (googleStatus === "error") setMessage("Google sign-in failed. Please try again.");
   }, []);
 
   const submit = async () => {
@@ -71,7 +79,7 @@ function Account() {
   };
 
   const googleLogin = () => {
-    setMessage("Google sign-in will be available after Google OAuth is connected.");
+    window.location.assign("/auth/google");
   };
 
   return (
