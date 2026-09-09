@@ -2,6 +2,8 @@ import { useSession } from "@tanstack/react-start/server";
 
 export type TtiSession = {
   userId?: string;
+  oauthState?: string;
+  oauthCodeVerifier?: string;
 };
 
 export function useTtiSession() {
