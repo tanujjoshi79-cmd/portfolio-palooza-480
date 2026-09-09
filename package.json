@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "prisma generate && vite build",
-    "build:dev": "prisma generate && vite build --mode development",
+    "build": "bunx prisma@6.16.2 generate && vite build",
+    "build:dev": "bunx prisma@6.16.2 generate && vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev"
+    "db:generate": "bunx prisma@6.16.2 generate",
+    "db:push": "bunx prisma@6.16.2 db push",
+    "db:migrate": "bunx prisma@6.16.2 migrate dev"
   },
   "overrides": { "rolldown": "1.2.1" },
   "dependencies": {
