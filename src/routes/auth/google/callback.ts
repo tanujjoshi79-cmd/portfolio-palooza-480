@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { finishGoogleSignIn } from "@/lib/google-oauth.server";
 
 export const Route = createFileRoute("/auth/google/callback")({
   server: {
     handlers: {
       GET: async ({ request }) => {
+        const { finishGoogleSignIn } = await import("@/lib/google-oauth.server");
         const url = new URL(request.url);
         const code = url.searchParams.get("code");
         const state = url.searchParams.get("state");
