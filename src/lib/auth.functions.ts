@@ -1,14 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import {
-  authenticateUser,
-  createUser,
-  findUserByEmail,
-  getUserById,
-  normalizeEmail,
-  publicUser,
-} from "@/lib/auth.server";
-import { useTtiSession } from "@/lib/session";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -20,6 +11,11 @@ const signupSchema = credentialsSchema.extend({
 });
 
 export const getCurrentUserFn = createServerFn({ method: "GET" }).handler(async () => {
+  const [{ getUserById, publicUser }, { useTtiSession }] = await Promise.all([
+    import("@/lib/auth.server"),
+    import("@/lib/session"),
+  ]);
+
   const session = await useTtiSession();
   const userId = session.data.userId;
   if (!userId) return null;
@@ -36,6 +32,9 @@ export const getCurrentUserFn = createServerFn({ method: "GET" }).handler(async 
 export const signupFn = createServerFn({ method: "POST" })
   .validator(signupSchema)
   .handler(async ({ data }) => {
+    const [{ createUser, findUserByEmail, normalizeEmail, publicUser }, { useTtiSession }] =
+      await Promise.all([import("@/lib/auth.server"), import("@/lib/session")]);
+
     const email = normalizeEmail(data.email);
     const existing = await findUserByEmail(email);
 
@@ -51,6 +50,11 @@ export const signupFn = createServerFn({ method: "POST" })
 export const loginFn = createServerFn({ method: "POST" })
   .validator(credentialsSchema)
   .handler(async ({ data }) => {
+    const [{ authenticateUser, publicUser }, { useTtiSession }] = await Promise.all([
+      import("@/lib/auth.server"),
+      import("@/lib/session"),
+    ]);
+
     const user = await authenticateUser(data.email, data.password);
     if (!user) return { error: "Invalid email or password." };
 
@@ -61,6 +65,7 @@ export const loginFn = createServerFn({ method: "POST" })
   });
 
 export const logoutFn = createServerFn({ method: "POST" }).handler(async () => {
+  const { useTtiSession } = await import("@/lib/session");
   const session = await useTtiSession();
   await session.clear();
   return { success: true };
